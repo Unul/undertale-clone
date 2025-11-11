@@ -34,9 +34,6 @@ undertale_clone/
 ├── npc.py
 └── world.py
 
-yaml
-Copy code
-
 ---
 
 ## ⚡ Features
@@ -52,40 +49,30 @@ Copy code
 
 1. **Clone the repository**:
 
-```bash
 git clone https://github.com/<your-username>/undertale-clone.git
 cd undertale-clone
+
 Install dependencies:
 
-bash
-Copy code
 python -m pip install pygame
 Run the game:
-
-bash
-Copy code
 python main.py
+
 🎨 Assets
 assets/player.png – player sprite (optional: replace with your own)
-
 assets/npc.png – NPC sprite (optional: replace with your own)
-
 assets/music/chiptune_loop.ogg – background music
 
 📝 To Do / Future Improvements
+
 Add multiple NPCs with unique dialogues
-
 Implement collision detection and obstacles
-
 Add a battle/mini-game system
-
 Replace colored rectangles with full sprites
-
 Implement multiple music tracks for different areas
 
 💻 Requirements
 Python 3.7+
-
 Pygame 2.5+
 
 📌 License
