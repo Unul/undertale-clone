@@ -51,6 +51,10 @@ while running:
                 player_stats = {"hp": 50}
                 enemy_stats = {"hp": 25}
                 battle = Battle(player_stats, enemy_stats)
+                # initialize menu inside battle
+                from src.ui_battle import BattleMenu
+                battle.menu = BattleMenu(WIDTH, HEIGHT)
+                battle.menu.start()
                 game_state = "battle"
 
     # --- WORLD STATE ---
@@ -77,31 +81,28 @@ while running:
 
     # --- BATTLE STATE ---
     elif game_state == "battle":
-        # Initialize battle menu once
-        if not hasattr(battle, "menu"):
-            from src.ui_battle import BattleMenu
+        # --- Update battle logic ---
+        battle.update(events)
+
+        # --- Initialize menu once ---
+        if battle.menu is None:
             battle.menu = BattleMenu(WIDTH, HEIGHT)
             battle.menu.start()
 
-        # Update battle logic
-        battle.update(events)  # current battle logic (HP, active flag)
-
-        # Update menu and check selected option
+        # --- Menu input ---
         selected_option = battle.menu.update(events)
         if selected_option == "FIGHT":
-            import random
-            battle.enemy_stats["hp"] -= random.randint(5, 10)
-            print("Player attacks!")
-            # Optionally reset menu selection for next turn
+            battle.player_attack()
             battle.menu.selected_index = 0
 
-        # Draw everything
-        battle.draw(win)         # draws background, HP bars, etc.
-        battle.menu.draw(win)    # draws modal menu
+        # --- Draw battle ---
+        win.fill((0, 0, 0))   # clear screen first
+        battle.draw(win)       # HP bars + action text
+        battle.menu.draw(win)  # menu modal (at bottom)
         pygame.display.flip()
 
-        # --- End battle if enemy HP <= 0 or player HP <= 0 ---
-        if not battle.active or battle.enemy_stats["hp"] <= 0 or battle.player_stats["hp"] <= 0:
+        # --- End battle ---
+        if not battle.active:
             game_state = "world"
 
 pygame.quit()
