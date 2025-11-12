@@ -49,7 +49,7 @@ undertale_clone/
 
 1. **Clone the repository:**
 
-git clone https://github.com/<your-username>/undertale-clone.git
+git clone https://github.com/Unul/undertale-clone.git
 cd undertale-clone
 Install dependencies:
 

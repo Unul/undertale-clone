@@ -6,13 +6,13 @@ class NPC:
         self.y = y
         self.width = 32
         self.height = 32
-        self.color = (0, 100, 255)  # bleu
+        self.color = (0, 100, 255)  # blue
         self.dialogue = dialogue
         self.font = pygame.font.SysFont('Arial', 18)
         self.show_dialogue = False
 
     def update(self, player):
-        # Affiche le dialogue si le joueur est proche
+        # Displays the dialogue if the player is nearby
         distance = ((self.x - player.x)**2 + (self.y - player.y)**2) ** 0.5
         self.show_dialogue = distance < 50
 
@@ -21,3 +21,9 @@ class NPC:
         if self.show_dialogue:
             text_surface = self.font.render(self.dialogue, True, (255, 255, 255))
             win.blit(text_surface, (self.x, self.y - 20))
+
+    def is_near(self, player):
+        """Check if the player is close enough to interact or start a battle"""
+        distance_x = abs(self.x - player.x)
+        distance_y = abs(self.y - player.y)
+        return distance_x < 50 and distance_y < 50
