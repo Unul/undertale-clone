@@ -2,51 +2,49 @@ import pygame
 import random
 
 class Battle:
-    def __init__(self, player_stats, enemy_stats):
-        self.player_stats = player_stats
-        self.enemy_stats = enemy_stats
+    def __init__(self, player, enemy_hp, combat_area):
+        self.player = player
+        self.enemy_stats = {"hp": enemy_hp}
         self.active = True
-        self.menu = None
         self.action_text = ""
-        self.action_timer = 0  # for showing attack text temporarily
+        self.action_timer = 0
+        self.projectiles = []
+        self.combat_area = combat_area
 
     def update(self, events):
-        # End battle if HP <= 0
-        if self.player_stats["hp"] <= 0 or self.enemy_stats["hp"] <= 0:
-            self.active = False
-            return
-
-        # Handle simple temporary ESC exit
-        for event in events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.active = False
-
-        # Handle attack text timer
+        # --- Action text timer ---
         if self.action_timer > 0:
             self.action_timer -= 1
-            if self.action_timer <= 0:
-                self.action_text = ""
+        else:
+            self.action_text = ""
 
-    def player_attack(self):
-        damage = random.randint(5, 12)
-        self.enemy_stats["hp"] -= damage
-        self.action_text = f"You dealt {damage} damage!"
-        self.action_timer = 60  # show text for ~1 second at 60 FPS
+        # --- Spawn projectiles randomly ---
+        if random.randint(0, 20) == 0:
+            self.spawn_projectile()
+
+        # --- Move projectiles and check collision ---
+        player_rect = pygame.Rect(self.player.x, self.player.y, self.player.width, self.player.height)
+        for proj in self.projectiles[:]:
+            proj["y"] += proj["speed"]
+            proj_rect = pygame.Rect(proj["x"], proj["y"], proj["size"], proj["size"])
+            if not self.combat_area.colliderect(proj_rect):
+                self.projectiles.remove(proj)
+            elif player_rect.colliderect(proj_rect):
+                self.player.hp -= 1
+                self.projectiles.remove(proj)
+
+        # --- End battle if HP zero ---
+        if self.enemy_stats["hp"] <= 0 or self.player.hp <= 0:
+            self.active = False
+
+    def spawn_projectile(self):
+        x = random.randint(self.combat_area.left, self.combat_area.right - 10)
+        self.projectiles.append({"x": x, "y": self.combat_area.top, "size": 10, "speed": 3})
 
     def draw(self, screen):
-        # Background
-        screen.fill((0, 0, 0))
+        # Draw player
+        pygame.draw.rect(screen, self.player.color, (self.player.x, self.player.y, self.player.width, self.player.height))
 
-        # HP bars above menu
-        pygame.draw.rect(screen, (255, 0, 0), (50, 50, self.player_stats["hp"]*2, 20))   # Player
-        pygame.draw.rect(screen, (0, 0, 255), (400, 50, self.enemy_stats["hp"]*2, 20))   # Enemy
-
-        # Player & Enemy labels
-        font = pygame.font.Font(None, 24)
-        screen.blit(font.render(f"Player HP: {self.player_stats['hp']}", True, (255,255,255)), (50,25))
-        screen.blit(font.render(f"Enemy HP: {self.enemy_stats['hp']}", True, (255,255,255)), (400,25))
-
-        # Action text slightly below bars
-        if self.action_text:
-            action_font = pygame.font.Font(None, 28)
-            screen.blit(action_font.render(self.action_text, True, (255, 255, 0)), (50, 90))
+        # Draw projectiles
+        for proj in self.projectiles:
+            pygame.draw.rect(screen, (0, 255, 0), (proj["x"], proj["y"], proj["size"], proj["size"]))

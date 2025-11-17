@@ -8,6 +8,7 @@ class Player:
         self.height = 32
         self.color = (255, 0, 0)
         self.vel = 4
+        self.hp = 50
 
     def update(self, keys):
         if keys[pygame.K_LEFT]:

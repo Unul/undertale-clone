@@ -2,8 +2,8 @@ import pygame
 from src.player import Player
 from src.npc import NPC
 from src.battle import Battle
-from src.ui_battle import BattleMenu
 from src.ui_dialogue import DialogueBox
+import random
 
 # --- Init Pygame ---
 pygame.init()
@@ -28,42 +28,29 @@ dialogue_box = DialogueBox(WIDTH, HEIGHT)
 game_state = "world"
 battle = None
 
-# Initialize menu inside Battle
-if battle and not hasattr(battle, "menu"):
-    battle.menu = BattleMenu(WIDTH, HEIGHT)
-    battle.menu.start()
-
 # --- Main loop ---
 running = True
 while running:
     clock.tick(FPS)
     events = pygame.event.get()
-
-    # --- Global events ---
+    
     for event in events:
         if event.type == pygame.QUIT:
             running = False
 
-        # --- Trigger battle when pressing E while dialogue is fully displayed ---
+        # --- Trigger battle when pressing E near NPC ---
         if game_state == "world" and event.type == pygame.KEYDOWN and event.key == pygame.K_e:
-            if dialogue_box.active and dialogue_box.char_index >= len(dialogue_box.text):
+            if npc.is_near(player):
+                dialogue_box.start("Get ready for battle!")
                 dialogue_box.close()
-                player_stats = {"hp": 50}
-                enemy_stats = {"hp": 25}
-                battle = Battle(player_stats, enemy_stats)
-                # initialize menu inside battle
-                from src.ui_battle import BattleMenu
-                battle.menu = BattleMenu(WIDTH, HEIGHT)
-                battle.menu.start()
+                battle = Battle(player, enemy_hp=50, combat_area=pygame.Rect(50, 50, 540, 200))
                 game_state = "battle"
 
     # --- WORLD STATE ---
     if game_state == "world":
         keys = pygame.key.get_pressed()
         player.update(keys)
-        npc.update(player)
-
-        # --- Show dialogue automatically if near NPC, hide if far ---
+        
         if npc.is_near(player):
             if not dialogue_box.active:
                 dialogue_box.start(npc.dialogue)
@@ -71,7 +58,7 @@ while running:
             if dialogue_box.active:
                 dialogue_box.close()
 
-        # --- Draw world scene ---
+        # --- Draw world ---
         win.fill((50, 50, 50))
         player.draw(win)
         npc.draw(win)
@@ -80,25 +67,22 @@ while running:
         pygame.display.flip()
 
     # --- BATTLE STATE ---
-    elif game_state == "battle":
+    elif game_state == "battle" and battle is not None:
+        keys = pygame.key.get_pressed()
+        
+        # --- Update player inside combat area ---
+        player.update(keys)
+        player.x = max(battle.combat_area.left, min(player.x, battle.combat_area.right - player.width))
+        player.y = max(battle.combat_area.top, min(player.y, battle.combat_area.bottom - player.height))
+
         # --- Update battle logic ---
         battle.update(events)
 
-        # --- Initialize menu once ---
-        if battle.menu is None:
-            battle.menu = BattleMenu(WIDTH, HEIGHT)
-            battle.menu.start()
-
-        # --- Menu input ---
-        selected_option = battle.menu.update(events)
-        if selected_option == "FIGHT":
-            battle.player_attack()
-            battle.menu.selected_index = 0
-
-        # --- Draw battle ---
-        win.fill((0, 0, 0))   # clear screen first
-        battle.draw(win)       # HP bars + action text
-        battle.menu.draw(win)  # menu modal (at bottom)
+        # --- Draw battle scene ---
+        win.fill((30, 30, 30))  # background behind dialogue/combat area
+        dialogue_box.update()
+        dialogue_box.draw(win)
+        battle.draw(win)
         pygame.display.flip()
 
         # --- End battle ---

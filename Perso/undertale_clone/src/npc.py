@@ -18,9 +18,7 @@ class NPC:
 
     def draw(self, win):
         pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.height))
-        if self.show_dialogue:
-            text_surface = self.font.render(self.dialogue, True, (255, 255, 255))
-            win.blit(text_surface, (self.x, self.y - 20))
+
 
     def is_near(self, player):
         """Check if the player is close enough to interact or start a battle"""

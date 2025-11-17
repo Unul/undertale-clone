@@ -32,8 +32,13 @@ class BattleMenu:
         if not self.active:
             return
 
-        # Draw black modal
-        pygame.draw.rect(screen, (0, 0, 0), self.box_rect)
+        # Create a semi-transparent surface
+        menu_surface = pygame.Surface((self.box_rect.width, self.box_rect.height))
+        menu_surface.set_alpha(180)  # semi-transparent
+        menu_surface.fill((0, 0, 0))
+        screen.blit(menu_surface, (self.box_rect.left, self.box_rect.top))
+
+        # Draw white border
         pygame.draw.rect(screen, (255, 255, 255), self.box_rect, 2)
 
         # Draw options
